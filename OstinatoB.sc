@@ -4,10 +4,11 @@
 (
 SynthDef(\padsA, {
 	|out = 0, amp = 1, gate = 1, freq = 440, transitionDuration = 0.1, lfoFreq = 0.2 |
-	var generator = SinOsc.ar(Lag2.kr(freq, transitionDuration), 0, amp) + Impulse.ar(Lag3.kr(freq, transitionDuration * 0.9) * 2, 0.05);
+	var generator = SinOsc.ar(Lag2.kr(freq, transitionDuration), 0, amp) + Impulse.ar(Lag3.kr(freq, transitionDuration * 0.9) * 2, 0.025);
 	var envelope = Linen.kr(gate, releaseTime: transitionDuration / 2, doneAction: 2);
 	var lfo = SinOsc.kr([lfoFreq, lfoFreq * 0.7], 0, 0.1, 0.9);
-	var filter = BPF.ar(generator * lfo, Lag.kr(freq, transitionDuration), rq: 0.4);
+	var filterLfo = SinOsc.kr([lfoFreq * 0.3, lfoFreq * 0.35], 0, 0.25, 0.9);
+	var filter = BPF.ar(generator * lfo, Lag.kr(freq, transitionDuration) * filterLfo, rq: 1);
 	var ampUgen = Lag2.kr(amp, transitionDuration);
 	var synthesized = filter * envelope * ampUgen;
 
@@ -28,7 +29,7 @@ SynthDef(\reverb, {
 (
 ~reverbBus = Bus.audio(Server.default, 2);
 ~reverb = Synth(\reverb, [\in, ~reverbBus, \damp, 0.1, \room, 0.8, \mix, 0.5]);
-~reverb.free;
+//~reverb.free;
 )
 ///////////////
 // Constants //
@@ -52,37 +53,37 @@ SynthDef(\reverb, {
 
 // Sequence a
 ~sequenceA = [
-	// Each step consists of chord duration as an index of the
-	// ~proportionsA array, chord as an index from the ~chordsA array
+	// Each step consists of a chord as an index from the ~chordsA array
 	// and transposition in Pbind degrees
-	[2, 0, 0],
-	[2, 1, -2],
-	[2, 2, 0],
-	[0, 3, 0],
-	[4, 4, 2],
-	[4, 5, 2],
-	[2, 6, 4],
-	[2, 2, 4],
-	[2, 3, -2],
-	[0, 6, -8],
-	[0, 7, -8],
-	[4, 7, -10],
-	[0, 8, -8],
-	[2, 9, -4],
-	[0, 0, 0]
+	[0, 0],
+	[1, -2],
+	[2, 0],
+	[3, 0],
+	[4, 2],
+	[5, 2],
+	[6, 4],
+	[2, 4],
+	[3, -2],
+	[6, -8],
+	[7, -8],
+	[7, -10],
+	[8, -8],
+	[9, -4],
+	[0, 0]
 ];
 )
 
 (
 ~padsASequence = Routine({
 	var duration, durationMultiplier, chord, transposition, ppar, amp, startNote;
+	durationMultiplier = Pseq(~proportionsA, inf).asStream;
 	~sequenceA.do({ |step|
 		amp = 0.25;
 		startNote = 4.rand;
-		durationMultiplier = ~proportionsA[step[0]] * 3;
+		durationMultiplier = durationMultiplier.next * 3;
 		duration = 14 * durationMultiplier;
-		chord = ~chordsA[step[1]];
-		transposition = step[2];
+		chord = ~chordsA[step[0]];
+		transposition = step[1];
 		
 		ppar = Ppar([
 			Pmono(
