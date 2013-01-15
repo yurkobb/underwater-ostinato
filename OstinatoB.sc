@@ -18,11 +18,7 @@ SynthDef(\reverb, {
 	|out = 0, in = 0, amp = 1, mix = 0.33, room = 0.5, damp = 0.5, feedbackMul = 0.85 |
 	var inputSignal, localIn, feedback, reverb;
 	inputSignal = In.ar(in, 2);
-	LocalOut.ar(CombN.ar(inputSignal));
-	localIn = LocalIn.ar(2);
-	feedback = localIn * feedbackMul + inputSignal;
-	reverb = FreeVerb2.ar(feedback[0], feedback[1], mix, room, damp);
-	//reverb = feedback;
+	reverb = FreeVerb2.ar(inputSignal[0], inputSignal[1], mix, room, damp);
 	Out.ar(out, reverb);
 }).add;
 )
