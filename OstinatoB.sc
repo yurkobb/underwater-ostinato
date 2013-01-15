@@ -52,36 +52,53 @@ SynthDef(\reverb, {
 	// Each step consists of a chord as an index from the ~chordsA array
 	// and transposition in Pbind degrees
 	[0, 0],
-	[1, -2],
+	[1, 0],
+	[0, -4],
+	[1, -4],
+	[0, -7],
+	[1, -7],
+	[2, -4],
+	[3, -4],
 	[2, 0],
 	[3, 0],
-	[4, 2],
-	[5, 2],
-	[6, 4],
-	[2, 4],
-	[3, -2],
-	[6, -8],
-	[7, -8],
-	[7, -10],
-	[8, -8],
-	[9, -4],
-	[0, 0]
+	[4, -4],
+	[5, -4],
+	[4, -7],
+	[5, -7],
+	[6, 0],
+	[7, 0],
+	[6, -4],
+	[7, -4],
+	[8, -7],
+	[9, -7],
+	[9, 0],
+	[9, 0]
 ];
 )
 
 (
 ~padsASequence = Routine({
-	var duration, durationMultiplier, chord, transposition, ppar, amp, startNote;
-	durationMultiplier = Pseq(~proportionsA, inf).asStream;
+	var durationSequence;
+	durationSequence = Pseq(~proportionsA, inf).asStream;
 	~sequenceA.do({ |step|
+		var duration, durationMultiplier, chord, transposition, ppar, amp, startNote;
 		amp = 0.25;
 		startNote = 4.rand;
-		durationMultiplier = durationMultiplier.next * 3;
+		durationMultiplier = durationSequence.next * 3;
 		duration = 14 * durationMultiplier;
 		chord = ~chordsA[step[0]];
 		transposition = step[1];
 		
 		ppar = Ppar([
+			Pmono(
+				\padsA,
+				\dur, Pseq([1, duration]),
+				\degree, Pseq([chord[startNote], chord[0] - 7]),
+				\mtranspose, transposition,
+				\out, ~reverbBus,
+				\amp, Pseq([0, amp]),
+				\transitionDuration, ~seriesA[1] * durationMultiplier
+			),
 			Pmono(
 				\padsA,
 				\dur, Pseq([1, duration]),
@@ -120,9 +137,11 @@ SynthDef(\reverb, {
 			)
 		]);
 		ppar.play;
+		"Next chord".postln;
 		duration.wait;
 	})
 });
+~padsASequences = [];
 ~padsASequencePlayer = Routine({
 	var interval, routine;
 	interval = ~seriesA * 8;
@@ -130,6 +149,7 @@ SynthDef(\reverb, {
 		interval.do({ |dur|
 			if(dur.booleanValue, {
 				routine = ~padsASequence.reset.play;
+				~padsASequences = ~padsASequences.add(routine);
 				"Next cycle.".postln;
 				dur.wait;
 			});
@@ -137,6 +157,7 @@ SynthDef(\reverb, {
 	}
 });
 )
-(
+
 b = ~padsASequencePlayer.reset.play;
 b.stop;
+//~padsASequences.do({|i| i.stop;});
