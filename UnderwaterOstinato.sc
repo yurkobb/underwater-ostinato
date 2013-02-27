@@ -14,7 +14,7 @@ SynthDef(\padsA, {
 	var envelope = Linen.kr(gate, releaseTime: transitionDuration / 2, doneAction: 2);
 	var lfo = SinOsc.kr([lfoFreq, lfoFreq * 0.7], 0, 0.1, 0.9);
 	var filterLfo = SinOsc.kr([lfoFreq * 0.3, lfoFreq * 0.35], 0, 0.25, 0.9);
-	var filter = BPF.ar(generator * lfo, (Lag.kr(freq, transitionDuration) * filterLfo) / 4, rq: 1);
+	var filter = BPF.ar(generator * lfo, (Lag.kr(freq, transitionDuration) * filterLfo) / 4, rq: 1.5);
 	var ampUgen = Lag2.kr(amp, transitionDuration);
 	var synthesized = filter * envelope * ampUgen;
 
