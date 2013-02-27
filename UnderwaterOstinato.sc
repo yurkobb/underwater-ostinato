@@ -81,7 +81,9 @@ SynthDef(\reverb, {
 	[9, 0]
 ];
 )
-
+///////////////
+// Algorithm //
+///////////////
 (
 ~padsASequence = Routine({
 	var durationSequence;
@@ -164,6 +166,9 @@ SynthDef(\reverb, {
 });
 )
 
+////////////////
+// Conducting //
+////////////////
 b = ~padsASequencePlayer.reset.play;
 b.stop;
 //~padsASequences.do({|i| i.stop;});
