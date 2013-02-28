@@ -40,6 +40,8 @@ SynthDef(\reverb, {
 // Series a
 ~seriesA = [0, 7, 10, 12];
 ~proportionsA = [(7 / 12), (7 / 10), 1, (10 / 7), (12 / 7)];
+
+// Chords palette
 ~chordsA = [
 	[0, 4, 9, 13],
 	[0, 4, 9, 12],
