@@ -96,7 +96,7 @@ SynthDef(\reverb, {
 		amp = 0.25;
 		startNote = 4.rand;
 		durationMultiplier = durationSequence.next * 3;
-		duration = 8 * durationMultiplier;
+		duration = ~chordDurationUnit * durationMultiplier;
 		chord = ~chordsA[step[0]];
 		transposition = step[1];
 		
@@ -155,7 +155,7 @@ SynthDef(\reverb, {
 ~padsASequences = [];
 ~padsASequencePlayer = Routine({
 	var interval, routine;
-	interval = ~seriesA * 5;
+	interval = ~seriesA * ~canonDurationUnit;
 	loop {
 		interval.do({ |dur|
 			if(dur.booleanValue, {
@@ -172,6 +172,12 @@ SynthDef(\reverb, {
 ////////////////
 // Conducting //
 ////////////////
+(
+~chordDurationUnit = 8;
+~canonDurationUnit = 5;
 b = ~padsASequencePlayer.reset.play;
+)
+(
 b.stop;
+)
 //~padsASequences.do({|i| i.stop;});
