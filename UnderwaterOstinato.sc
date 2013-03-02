@@ -89,7 +89,7 @@ SynthDef(\reverb, {
 ///////////////
 (
 ~padsASequence = Routine({
-	var durationSequence;
+	var durationSequence, iteration;
 	durationSequence = Pseq(~proportionsA, inf).asStream;
 	~sequenceA.do({ |step|
 		var duration, durationMultiplier, chord, transposition, ppar, amp, startNote;
@@ -99,6 +99,9 @@ SynthDef(\reverb, {
 		duration = ~chordDurationUnit * durationMultiplier;
 		chord = ~chordsA[step[0]];
 		transposition = step[1];
+
+		"Playing chord ".post;
+		chord.postln;
 		
 		ppar = Ppar([
 			Pmono(
@@ -148,36 +151,39 @@ SynthDef(\reverb, {
 			)
 		]);
 		ppar.play;
-		"Next chord".postln;
 		duration.wait;
 	})
 });
 ~padsASequences = [];
 ~padsASequencePlayer = Routine({
-	var interval, routine;
-	interval = ~seriesA * ~canonDurationUnit;
-	loop {
-		interval.do({ |dur|
-			if(dur.booleanValue, {
-				routine = ~padsASequence.reset.play;
-				~padsASequences = ~padsASequences.add(routine);
-				"Next cycle.".postln;
-				dur.wait;
-			});
-		})
-	}
+	var durations, routine, dur, series;
+	series = ~seriesA.select({ |item| item > 0 });
+	durations = Pseq(series * ~canonDurationUnit, inf).asStream;
+	~maxIterations.do({ |iteration|
+		dur = durations.next;
+		if(dur.booleanValue, {
+			"Iteration ".postc; iteration.postln;
+			routine = ~padsASequence.reset.play;
+			~padsASequences = ~padsASequences.add(routine);
+			dur.wait;
+		});
+	});
+	"No more iterations".postcln;
 });
 )
 
 ////////////////
 // Conducting //
 ////////////////
+// Initialize and start
 (
 ~chordDurationUnit = 8;
 ~canonDurationUnit = 5;
+~maxIterations = 5;
 b = ~padsASequencePlayer.reset.play;
 )
+// Interrupt if needed
 (
 b.stop;
+~padsASequences.do({|i| i.stop;});
 )
-//~padsASequences.do({|i| i.stop;});
