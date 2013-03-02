@@ -100,8 +100,7 @@ SynthDef(\reverb, {
 		chord = ~chordsA[step[0]];
 		transposition = step[1];
 
-		"Playing chord ".post;
-		chord.postln;
+		"Chord: ".post; chord.post; " Transposition: ".post; transposition.postln;
 		
 		ppar = Ppar([
 			Pmono(
