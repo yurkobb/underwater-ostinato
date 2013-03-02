@@ -93,7 +93,7 @@ SynthDef(\reverb, {
 	durationSequence = Pseq(~proportionsA, inf).asStream;
 	~sequenceA.do({ |step|
 		var duration, durationMultiplier, chord, transposition, ppar, amp, startNote;
-		amp = 0.25;
+		amp = 0.38;
 		startNote = 4.rand;
 		durationMultiplier = durationSequence.next * 3;
 		duration = ~chordDurationUnit * durationMultiplier;
