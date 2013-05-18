@@ -185,8 +185,8 @@ SynthDef(\reverb, {
 ////////////////
 // Initialize and start
 (
-~chordDurationUnit = 8;
-~canonDurationUnit = 5;
+~chordDurationUnit = 14;
+~canonDurationUnit = 8;
 ~maxIterations = 5;
 b = ~padsASequencePlayer.reset.play;
 ~reverb = Synth(\reverb, [\in, ~reverbBus, \damp, 0.1, \room, 0.8, \mix, 0.5]);
