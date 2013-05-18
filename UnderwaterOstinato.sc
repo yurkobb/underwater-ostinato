@@ -8,6 +8,10 @@
 // Studio //
 ////////////
 (
+// Performance-related settings
+Server.default.options.numInputBusChannels = 1;
+
+// Synths
 SynthDef(\padsA, {
 	|out = 0, amp = 1, gate = 1, freq = 440, transitionDuration = 0.1, lfoFreq = 0.2 |
 	var generator = SinOsc.ar(Lag2.kr(freq, transitionDuration), 0, amp) + Impulse.ar(Lag3.kr(freq, transitionDuration * 0.9) * 2, 0, 0.2);
@@ -20,6 +24,14 @@ SynthDef(\padsA, {
 
 	Out.ar(out, synthesized);
 }).add;
+SynthDef(\acousticInstrument, {
+	|out = 0, in = 2, amp = 1, decayTime = 3, delayTime = 0.85 |
+	var rawIn = In.ar(in, 1);
+	var filtered = Limiter.ar(HPF.ar(rawIn, 200), 0.8, 0.05);
+	var comb = CombN.ar(filtered, delayTime, delayTime, decayTime);
+	var panned = Pan2.ar(comb, LFNoise1.kr(0.2, 0.5));
+	Out.ar(out, panned);
+}).add;
 SynthDef(\reverb, {
 	|out = 0, in = 0, amp = 1, mix = 0.33, room = 0.5, damp = 0.5, feedbackMul = 0.85 |
 	var inputSignal, localIn, feedback, reverb;
@@ -27,10 +39,7 @@ SynthDef(\reverb, {
 	reverb = FreeVerb2.ar(inputSignal[0], inputSignal[1], mix, room, damp);
 	Out.ar(out, reverb);
 }).add;
-)
-(
 ~reverbBus = Bus.audio(Server.default, 2);
-~reverb = Synth(\reverb, [\in, ~reverbBus, \damp, 0.1, \room, 0.8, \mix, 0.5]);
 //~reverb.free;
 )
 ///////////////
@@ -180,9 +189,12 @@ SynthDef(\reverb, {
 ~canonDurationUnit = 5;
 ~maxIterations = 5;
 b = ~padsASequencePlayer.reset.play;
+~reverb = Synth(\reverb, [\in, ~reverbBus, \damp, 0.1, \room, 0.8, \mix, 0.5]);
+~acoustic = Synth(\acousticInstrument, [\out, ~reverbBus, \decayTime, 6]);
 )
 // Interrupt if needed
 (
 b.stop;
 ~padsASequences.do({|i| i.stop;});
+~acoustic.free;
 )
